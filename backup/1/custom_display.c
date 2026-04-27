@@ -1,4 +1,3 @@
-#include "vector.h"
 #include "display.h"
 #include <stdint.h>
 
@@ -36,12 +35,4 @@ void render_custom_color_buffer(int window_width, SDL_Renderer *renderer, SDL_Te
         color_buffer,
         (int)(window_width * sizeof(uint32_t)));
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
-}
-
-vec2_t project3d_2d(vec3_t point, float fov_factor)
-{
-    vec2_t projected_point = {
-        .x = (fov_factor * point.x) / point.z,
-        .y = (fov_factor * point.y) / point.z};
-    return projected_point;
 }

@@ -1,10 +1,15 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
-#include <SDL2/SDL.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include "include/SDL2/SDL.h"
+
 #include "display.h"
-#include "custom_display.h"
 #include "vector.h"
+#include "custom_display.h"
+
+bool is_running = false;
+// uint32_t *color_buffer1 = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Declare an array of vectors/points
@@ -13,11 +18,7 @@
 vec3_t cube_points[N_POINTS]; // 9x9x9 cube
 vec2_t projected_points[N_POINTS];
 
-vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
-
-float fov_factor = 640;
-
-bool is_running = false;
+float fov_factor = 128;
 
 void setup(void)
 {
@@ -49,6 +50,21 @@ void setup(void)
     }
 }
 
+// void setup(void)
+// {
+//     // Allocate the required memory in bytes to hold the color buffer
+//     color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+
+//     color_buffer1 = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+//     // Creating a SDL texture that is used to display the color buffer
+//     color_buffer_texture = SDL_CreateTexture(
+//         renderer,
+//         SDL_PIXELFORMAT_ARGB8888,
+//         SDL_TEXTUREACCESS_STREAMING,
+//         window_width,
+//         window_height);
+// }
+
 void process_input(void)
 {
     SDL_Event event;
@@ -69,13 +85,13 @@ void process_input(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Function that receives a 3D vector and returns a projected 2D point
 ////////////////////////////////////////////////////////////////////////////////
-// vec2_t project(vec3_t point)
-// {
-//     vec2_t projected_point = {
-//         .x = (fov_factor * point.x) / point.z,
-//         .y = (fov_factor * point.y) / point.z};
-//     return projected_point;
-// }
+vec2_t project(vec3_t point)
+{
+    vec2_t projected_point = {
+        .x = (fov_factor * point.x) / point.z,
+        .y = (fov_factor * point.y) / point.z};
+    return projected_point;
+}
 
 void update(void)
 {
@@ -83,11 +99,8 @@ void update(void)
     {
         vec3_t point = cube_points[i];
 
-        // Move the points away from the camera
-        point.z -= camera_position.z;
-
         // Project the current point
-        vec2_t projected_point = project3d_2d(point, fov_factor);
+        vec2_t projected_point = project(point);
 
         // Save the projected 2D vector in the array of projected points
         projected_points[i] = projected_point;
@@ -109,6 +122,10 @@ void render(void)
             4,
             0xFFFFFF00);
     }
+    // for (int i = 0; i < 100; i++)
+    // {
+    //     printf("%08" PRIx32 "\n", color_buffer[i]);
+    // }
 
     render_color_buffer();
 
@@ -116,6 +133,29 @@ void render(void)
 
     SDL_RenderPresent(renderer);
 }
+
+// void update(void)
+// {
+//     // TODO:
+// }
+
+// void render(void)
+// {
+
+//     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+//     SDL_RenderClear(renderer);
+
+//     draw_grid();
+
+//     // draw_rect(300, 200, 300, 150, 0xFFFF00FF);
+//     draw_rect_to(100, 200, 400, 30, window_width, 0xFFFF00FF, color_buffer1);
+
+//     draw_grid_to(10, 10, window_width, window_height, 0xFFFF00FF, color_buffer1);
+//     render_custom_color_buffer(window_width, renderer, color_buffer_texture, color_buffer1);
+//     clear_color_buffer(0xFF000000);
+
+//     SDL_RenderPresent(renderer);
+// }
 
 int main(int argc, char *args[])
 {
@@ -129,8 +169,6 @@ int main(int argc, char *args[])
         update();
         render();
     }
-
-    destroy_window();
 
     return 0;
 }
